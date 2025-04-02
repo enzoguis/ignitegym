@@ -11,15 +11,42 @@ import Logo from '@assets/logo.svg'
 import { Input } from '@components/Input'
 import { Button } from '@components/Button'
 import { useNavigation } from '@react-navigation/native'
-import { useState } from 'react'
+import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+
+type FormDataProps = {
+  name: string
+  email: string
+  password: string
+  password_confirm: string
+}
+
+const signUpSchema = yup.object({
+  name: yup.string().required('Informe o nome'),
+  email: yup.string().required('Informe o e-mail').email('E-mail inválido'),
+  password: yup
+    .string()
+    .required('Informe a senha')
+    .min(6, 'A senha deve ter pelo menos 6 dígitos'),
+  password_confirm: yup
+    .string()
+    .required('Confirme a senha')
+    .oneOf([yup.ref('password'), ''], 'A confirmação de senha não confere'),
+})
 
 export function SignUp() {
-  const { control, handleSubmit } = useForm()
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormDataProps>({
+    resolver: yupResolver(signUpSchema),
+  })
 
   const navigation = useNavigation()
 
-  function handleSignUp(data: any) {}
+  function handleSignUp(data: FormDataProps) {}
 
   function handleGoBack() {
     navigation.goBack()
@@ -59,6 +86,7 @@ export function SignUp() {
                   placeholder="Nome"
                   value={value}
                   onChangeText={onChange}
+                  errorMessage={errors.name?.message}
                 />
               )}
             />
@@ -73,6 +101,7 @@ export function SignUp() {
                   keyboardType="email-address"
                   value={value}
                   onChangeText={onChange}
+                  errorMessage={errors.email?.message}
                 />
               )}
             />
@@ -85,6 +114,7 @@ export function SignUp() {
                   placeholder="Senha"
                   value={value}
                   onChangeText={onChange}
+                  errorMessage={errors.password?.message}
                   secureTextEntry
                 />
               )}
@@ -92,7 +122,7 @@ export function SignUp() {
 
             <Controller
               control={control}
-              name="passoword_confirm"
+              name="password_confirm"
               render={({ field: { onChange, value } }) => (
                 <Input
                   placeholder="Confirmar senha"
@@ -100,6 +130,7 @@ export function SignUp() {
                   onChangeText={onChange}
                   secureTextEntry
                   onSubmitEditing={handleSubmit(handleSignUp)}
+                  errorMessage={errors.password_confirm?.message}
                   returnKeyType="send"
                 />
               )}
