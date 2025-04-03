@@ -13,9 +13,12 @@ import {
   VStack,
 } from '@gluestack-ui/themed'
 import { yupResolver } from '@hookform/resolvers/yup'
+import { useAuth } from '@hooks/useAuth'
 import { useNavigation } from '@react-navigation/native'
+import { AuthNavigatorRoutesProps } from '@routes/auth.routes'
 import { api } from '@services/api'
 import { AppError } from '@utils/AppError'
+import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import * as yup from 'yup'
 
@@ -40,6 +43,7 @@ const signUpSchema = yup.object({
 })
 
 export function SignUp() {
+  const [isLoading, setIsLoading] = useState(false)
   const toast = useToast()
 
   const {
@@ -50,12 +54,16 @@ export function SignUp() {
     resolver: yupResolver(signUpSchema),
   })
 
-  const navigation = useNavigation()
+  const { signIn } = useAuth()
+
+  const navigation = useNavigation<AuthNavigatorRoutesProps>()
 
   async function handleSignUp({ name, email, password }: FormDataProps) {
     try {
-      const response = await api.post('/users', { name, email, password })
-      console.log(response.data)
+      setIsLoading(true)
+
+      await api.post('/users', { name, email, password })
+      await signIn(email, password)
     } catch (error) {
       const isAppError = error instanceof AppError
       const title = isAppError
@@ -167,10 +175,16 @@ export function SignUp() {
             <Button
               title="Criar e acessar"
               onPress={handleSubmit(handleSignUp)}
+              isLoading={isLoading}
             />
           </Center>
 
-          <Button title="Voltar para o login" variant="outline" mt="$12" />
+          <Button
+            title="Voltar para o login"
+            variant="outline"
+            mt="$12"
+            onPress={handleGoBack}
+          />
         </VStack>
       </VStack>
     </ScrollView>

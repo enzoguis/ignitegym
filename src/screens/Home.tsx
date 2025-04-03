@@ -1,9 +1,19 @@
 import { ExerciseCard } from '@components/ExerciseCard'
 import { Group } from '@components/Group'
 import { HomeHeader } from '@components/HomeHeader'
-import { FlatList, Heading, HStack, Text, VStack } from '@gluestack-ui/themed'
+import { ToastMessage } from '@components/ToastMessage'
+import {
+  FlatList,
+  Heading,
+  HStack,
+  Text,
+  useToast,
+  VStack,
+} from '@gluestack-ui/themed'
 import { useNavigation } from '@react-navigation/native'
 import { AppNavigatorRoutesProps } from '@routes/app.routes'
+import { api } from '@services/api'
+import { AppError } from '@utils/AppError'
 import { useState } from 'react'
 
 export function Home() {
@@ -13,18 +23,39 @@ export function Home() {
     'Levantamento Terra',
     'Remada unilateral',
   ])
-  const [groups, setGroups] = useState<string[]>([
-    'triceps',
-    'biceps',
-    'costas',
-    'ombro',
-  ])
+  const [groups, setGroups] = useState<string[]>([])
   const [groupSelected, setGroupSelected] = useState('costas')
 
   const navigation = useNavigation<AppNavigatorRoutesProps>()
+  const toast = useToast()
 
   function handleOpenExerciseDetails() {
     navigation.navigate('exercise')
+  }
+
+  async function fetchGroups() {
+    try {
+      const { data } = await api.get('/groups')
+
+      setGroups(data)
+    } catch (error) {
+      const isAppError = error instanceof AppError
+      const title = isAppError
+        ? error.message
+        : 'Não foi possível carregar os grupos.'
+
+      toast.show({
+        placement: 'top',
+        render: ({ id }) => (
+          <ToastMessage
+            id={id}
+            action="error"
+            title={title}
+            onClose={() => toast.close(id)}
+          />
+        ),
+      })
+    }
   }
 
   return (
