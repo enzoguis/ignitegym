@@ -18,8 +18,6 @@ export function Home() {
   const [groups, setGroups] = useState<string[]>([])
   const [groupSelected, setGroupSelected] = useState('antebraço')
 
-  console.log()
-
   const navigation = useNavigation<AppNavigatorRoutesProps>()
   const toast = useToast()
 

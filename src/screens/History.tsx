@@ -1,20 +1,56 @@
 import { HistoryCard } from '@components/HistoryCard'
 import { ScreenHeader } from '@components/ScreenHeader'
-import { Heading, Text, VStack } from '@gluestack-ui/themed'
-import { useState } from 'react'
+import { ToastMessage } from '@components/ToastMessage'
+import { HistoryGroupByDayDTO } from '@dtos/HistoryGroupByDayDTO'
+import { Heading, Text, useToast, VStack } from '@gluestack-ui/themed'
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
+import { AppNavigatorRoutesProps } from '@routes/app.routes'
+import { api } from '@services/api'
+import { AppError } from '@utils/AppError'
+import { useCallback, useState } from 'react'
 import { SectionList } from 'react-native'
 
 export function History() {
-  const [exercises, setExercises] = useState([
-    {
-      title: '22.07.24',
-      data: ['Puxada Frontal', 'Remada Unilateral'],
-    },
-    {
-      title: '23.07.24',
-      data: ['Puxada Frontal'],
-    },
-  ])
+  const [isLoading, setIsLoading] = useState(true)
+  const [exercises, setExercises] = useState<HistoryGroupByDayDTO[]>([])
+
+  const toast = useToast()
+  const navigation = useNavigation<AppNavigatorRoutesProps>()
+
+  async function fetchHistory() {
+    try {
+      setIsLoading(true)
+      const { data } = await api.get(`/history`)
+      setExercises(data)
+
+      navigation.navigate('history')
+    } catch (error) {
+      const isAppError = error instanceof AppError
+      const title = isAppError
+        ? error.message
+        : 'Não foi possível registrar o exercício.'
+
+      toast.show({
+        placement: 'top',
+        render: ({ id }) => (
+          <ToastMessage
+            id={id}
+            action="error"
+            title={title}
+            onClose={() => toast.close(id)}
+          />
+        ),
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchHistory()
+    }, [])
+  )
 
   return (
     <VStack flex={1}>
@@ -22,8 +58,8 @@ export function History() {
 
       <SectionList
         sections={exercises}
-        keyExtractor={(item) => item}
-        renderItem={() => <HistoryCard />}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <HistoryCard data={item} />}
         style={{ paddingHorizontal: 32 }}
         renderSectionHeader={({ section }) => (
           <Heading
