@@ -7,12 +7,12 @@ import { AppRoutes } from './app.routes'
 import { Loading } from '@components/Loading'
 
 export function Routes() {
-  const { user, isLoadingStorageUserData } = useAuth()
+  const { user, isLoadingUserStorageData } = useAuth()
 
   const theme = DefaultTheme
   theme.colors.background = gluestackUIConfig.tokens.colors.gray700
 
-  if(isLoadingStorageUserData){
+  if (isLoadingUserStorageData) {
     return <Loading />
   }
 

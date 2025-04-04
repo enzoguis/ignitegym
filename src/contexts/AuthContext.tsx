@@ -10,7 +10,6 @@ import {
   storageUserRemove,
   storageUserSave,
 } from '@storage/storageUser'
-
 import { api } from '@services/api'
 import { UserDTO } from '@dtos/UserDTO'
 

@@ -1,8 +1,5 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import {
-  NativeStackNavigationConfig,
-  NativeStackNavigationProp,
-} from '@react-navigation/native-stack/lib/typescript/commonjs/src/types'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack/lib/typescript/commonjs/src/types'
 import { SignIn } from '@screens/SignIn'
 import { SignUp } from '@screens/SignUp'
 
