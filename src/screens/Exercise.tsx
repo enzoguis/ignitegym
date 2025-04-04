@@ -7,7 +7,7 @@ import {
   Image,
   Box,
 } from '@gluestack-ui/themed'
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import { AppNavigatorRoutesProps } from '@routes/app.routes'
 import { ArrowLeft } from 'lucide-react-native'
 import { ScrollView, TouchableOpacity } from 'react-native'
@@ -17,8 +17,14 @@ import SeriesSvg from '@assets/series.svg'
 import RepetitionsSvg from '@assets/repetitions.svg'
 import { Button } from '@components/Button'
 
+type RouteParams = {
+  id: string
+}
+
 export function Exercise() {
   const navigation = useNavigation<AppNavigatorRoutesProps>()
+  const route = useRoute()
+  const { id } = route.params as RouteParams
 
   function handleGoBack() {
     navigation.goBack()
