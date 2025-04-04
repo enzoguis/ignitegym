@@ -3,24 +3,18 @@ import { Input } from '@components/Input'
 import { ScreenHeader } from '@components/ScreenHeader'
 import { ToastMessage } from '@components/ToastMessage'
 import { UserPhoto } from '@components/UserPhoto'
-import {
-  Center,
-  Heading,
-  onChange,
-  Text,
-  useToast,
-  VStack,
-} from '@gluestack-ui/themed'
+import { Center, Heading, Text, useToast, VStack } from '@gluestack-ui/themed'
+import { yupResolver } from '@hookform/resolvers/yup'
 import { useAuth } from '@hooks/useAuth'
+import { api } from '@services/api'
+import { AppError } from '@utils/AppError'
 import * as FileSystem from 'expo-file-system'
 import * as ImagePicker from 'expo-image-picker'
-import * as yup from 'yup'
 import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { ScrollView, TouchableOpacity } from 'react-native'
-import { api } from '@services/api'
-import { AppError } from '@utils/AppError'
-import { yupResolver } from '@hookform/resolvers/yup'
+import * as yup from 'yup'
+import defaultUserAvatarPhoto from '@assets/userPhotoDefault.png'
 
 type FormDataProps = {
   name: string
@@ -54,7 +48,6 @@ const profileSchema = yup.object({
 })
 
 export function Profile() {
-  const [userPhoto, setUserPhoto] = useState('https://github.com/enzoguis.png')
   const [isUpdating, setIsUpdating] = useState(false)
 
   const toast = useToast()
@@ -106,7 +99,44 @@ export function Profile() {
           })
         }
 
-        setUserPhoto(photoSelected.assets[0].uri)
+        const fileExtension = photoUri.split('.').pop()
+
+        const photoFile = {
+          name: `${user.name}.${fileExtension}`.toLowerCase(),
+          uri: photoUri,
+          type: `image/${fileExtension}`,
+        } as any
+
+        const userPhotoUploadForm = new FormData()
+        userPhotoUploadForm.append('avatar', photoFile)
+
+        const avatarUpdatedResponse = await api.patch(
+          '/users/avatar',
+          userPhotoUploadForm,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          }
+        )
+
+        const userUpdated = user
+        userUpdated.avatar = avatarUpdatedResponse.data.avatar
+        console.log(avatarUpdatedResponse.data.avatar)
+
+        updateUserProfile(userUpdated)
+
+        toast.show({
+          placement: 'top',
+          render: ({ id }) => (
+            <ToastMessage
+              id={id}
+              action="success"
+              title="Foto alterada com sucesso!"
+              onClose={() => toast.close(id)}
+            />
+          ),
+        })
       }
     } catch (error) {
       console.log(error)
@@ -166,7 +196,11 @@ export function Profile() {
       <ScrollView contentContainerStyle={{ paddingBottom: 36 }}>
         <Center mt="$6" px="$10">
           <UserPhoto
-            source={{ uri: userPhoto }}
+            source={
+              user.avatar
+                ? { uri: `${api.defaults.baseURL}/avatar/${user.avatar}` }
+                : defaultUserAvatarPhoto
+            }
             size="xl"
             alt="Imagem do usuário"
           />
