@@ -8,8 +8,10 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { AppNavigatorRoutesProps } from '@routes/app.routes'
 import { api } from '@services/api'
 import { AppError } from '@utils/AppError'
+import dayjs from 'dayjs'
 import { useCallback, useState } from 'react'
 import { SectionList } from 'react-native'
+import { tagExerciseWeekHistoryUpdate } from '../notifications/notificationTags'
 
 export function History() {
   const [isLoading, setIsLoading] = useState(true)
@@ -47,9 +49,31 @@ export function History() {
     }
   }
 
+  async function weeklySummary() {
+    const today = dayjs()
+    const actualWeekDay = today.day()
+
+    if (actualWeekDay === 0) {
+      const lastSevenDays: string[] = []
+
+      for (let i = 0; i < 7; i++) {
+        const day = today.subtract(i, 'day').format('DD.MM.YYYY')
+        lastSevenDays.push(day)
+      }
+
+      const exercisesInTheSameWeek = exercises.filter((item) =>
+        lastSevenDays.includes(item.title)
+      )
+      tagExerciseWeekHistoryUpdate(exercisesInTheSameWeek.length.toString())
+    } else {
+      tagExerciseWeekHistoryUpdate('0')
+    }
+  }
+
   useFocusEffect(
     useCallback(() => {
       fetchHistory()
+      weeklySummary()
     }, [])
   )
 
