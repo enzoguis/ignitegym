@@ -21,6 +21,7 @@ import { AppError } from '@utils/AppError'
 import { useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import * as yup from 'yup'
+import { tagDoesUserHaveAccount } from '../notifications/notificationTags'
 
 type FormDataProps = {
   name: string
@@ -63,6 +64,7 @@ export function SignUp() {
       setIsLoading(true)
 
       await api.post('/users', { name, email, password })
+      tagDoesUserHaveAccount('yes')
       await signIn(email, password)
     } catch (error) {
       const isAppError = error instanceof AppError
