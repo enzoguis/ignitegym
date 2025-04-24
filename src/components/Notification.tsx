@@ -10,17 +10,42 @@ import {
   Center,
 } from '@gluestack-ui/themed'
 import { Dumbbell } from 'lucide-react-native'
+import { OSNotification } from 'react-native-onesignal'
+import { openURL } from 'expo-linking'
 
 interface NotificationProps {
-  title: string
-  onClose?: () => void
-  onPress?: () => void
+  data: OSNotification
+  onClose: () => void
+}
+type Props = {
+  data: OSNotification
+  onClose: () => void
 }
 
-export function Notification({ title, onClose, onPress }: NotificationProps) {
+type CustomOSNotification = {
+  custom: any
+}
+
+type CustomUOSNotification = {
+  u: string
+}
+
+export function Notification({ data, onClose }: NotificationProps) {
+  function handleOnPress() {
+    const { custom }: CustomOSNotification = JSON.parse(
+      data.rawPayload.toString()
+    )
+    const { u: uri }: CustomUOSNotification = JSON.parse(custom.toString())
+
+    if (uri) {
+      openURL(uri)
+      onClose()
+    }
+  }
+
   return (
     <Box position="absolute" top={0} left={0} right={0}>
-      <Pressable onPress={onPress}>
+      <Pressable onPress={handleOnPress}>
         <Box bg="#00B37E" borderRadius="$lg" p="$4" mx="$4" mt="$6">
           <HStack space="md" alignItems="center">
             <Center
@@ -34,7 +59,7 @@ export function Notification({ title, onClose, onPress }: NotificationProps) {
 
             <VStack flex={1} space="xs">
               <Text color="$white" fontWeight="$bold" fontSize="$md">
-                {title}
+                {data.title}
               </Text>
             </VStack>
 
