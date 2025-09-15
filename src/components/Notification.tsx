@@ -1,4 +1,4 @@
-import React from 'react'
+import React from "react";
 import {
   Box,
   HStack,
@@ -8,38 +8,34 @@ import {
   Icon,
   CloseIcon,
   Center,
-} from '@gluestack-ui/themed'
-import { Dumbbell } from 'lucide-react-native'
-import { OSNotification } from 'react-native-onesignal'
-import { openURL } from 'expo-linking'
+} from "@gluestack-ui/themed";
+import { Dumbbell } from "lucide-react-native";
+import { OSNotification } from "react-native-onesignal";
+import { openURL } from "expo-linking";
 
 interface NotificationProps {
-  data: OSNotification
-  onClose: () => void
-}
-type Props = {
-  data: OSNotification
-  onClose: () => void
+  data: OSNotification;
+  onClose: () => void;
 }
 
 type CustomOSNotification = {
-  custom: any
-}
+  custom: any;
+};
 
 type CustomUOSNotification = {
-  u: string
-}
+  u: string;
+};
 
 export function Notification({ data, onClose }: NotificationProps) {
   function handleOnPress() {
     const { custom }: CustomOSNotification = JSON.parse(
       data.rawPayload.toString()
-    )
-    const { u: uri }: CustomUOSNotification = JSON.parse(custom.toString())
+    );
+    const { u: uri }: CustomUOSNotification = JSON.parse(custom.toString());
 
     if (uri) {
-      openURL(uri)
-      onClose()
+      openURL(uri);
+      onClose();
     }
   }
 
@@ -72,5 +68,5 @@ export function Notification({ data, onClose }: NotificationProps) {
         </Box>
       </Pressable>
     </Box>
-  )
+  );
 }
